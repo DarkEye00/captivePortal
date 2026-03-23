@@ -8,7 +8,7 @@ from pyrad.dictionary import Dictionary
 from django.shortcuts import render
 from django.http import HttpResponse
 
-RADIUS_SERVER = '127.0.0.1'
+RADIUS_SERVER = '192.168.0.1'  # your RADIUS server IP
 RADIUS_SECRET = b'testing123'  # must match your clients.conf
 
 def login_page(request):
