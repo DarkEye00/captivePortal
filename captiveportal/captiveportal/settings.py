@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +27,7 @@ SECRET_KEY = 'django-insecure-mnl#dxcx0(k!=&^f-)vz%vksi6ntzbnq16&kys!__%ec=mv8)k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.100', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['verify.offshoreafrica.org', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -116,3 +118,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Microsoft OAuth settings
+CLIENT_ID = os.getenv('CLIENT_ID')
+TENANT_ID = os.getenv('TENANT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = os.getenv('REDIRECT_URI')

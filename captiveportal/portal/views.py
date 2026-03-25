@@ -1,70 +1,64 @@
-from django.shortcuts import render
-
-# Create your views here.
-import subprocess
-import pyrad.packet
-from pyrad.client import Client
-from pyrad.dictionary import Dictionary
-from django.shortcuts import render
+import msal
+import requests
+from django.shortcuts import render, redirect
+from django.conf import settings
 from django.http import HttpResponse
 
-RADIUS_SERVER = '192.168.0.1'  # your RADIUS server IP
-RADIUS_SECRET = b'testing123'  # must match your clients.conf
+def get_msal_app():
+    return msal.ConfidentialClientApplication(
+        settings.CLIENT_ID,
+        authority=f"https://login.microsoftonline.com/{settings.TENANT_ID}",
+        client_credential=settings.CLIENT_SECRET,
+    )
 
-def login_page(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        client_ip = request.POST.get('client_ip', '')
+def login(request):
+    # Save original URL client wanted to visit
+    next_url = request.GET.get('next', '/')
+    request.session['next_url'] = next_url
 
-        if authenticate_radius(username, password):
-            # Unlock the client IP via iptables
-            unlock_client(client_ip)
-            return render(request, 'portal/success.html', {
-                'username': username
-            })
-        else:
-            return render(request, 'portal/login.html', {
-                'error': 'Invalid username or password',
-                'client_ip': client_ip
-            })
+    msal_app = get_msal_app()
+    auth_url = msal_app.get_authorization_request_url(
+        scopes=["User.Read"],
+        redirect_uri=settings.REDIRECT_URI,
+    )
+    return redirect(auth_url)
 
-    # GET request - show login form
-    client_ip = request.GET.get('client_ip', request.META.get('REMOTE_ADDR', ''))
-    return render(request, 'portal/login.html', {'client_ip': client_ip})
+def callback(request):
+    code = request.GET.get('code')
+    if not code:
+        return HttpResponse("Authentication failed - no code received", status=400)
 
+    msal_app = get_msal_app()
+    result = msal_app.acquire_token_by_authorization_code(
+        code,
+        scopes=["User.Read"],
+        redirect_uri=settings.REDIRECT_URI,
+    )
 
-def authenticate_radius(username, password):
-    try:
-        client = Client(
-            server=RADIUS_SERVER,
-            secret=RADIUS_SECRET,
-            dict=Dictionary()
-        )
-        req = client.CreateAuthPacket(
-            code=pyrad.packet.AccessRequest,
-            User_Name=username,
-        )
-        req["User-Password"] = req.PwCrypt(password)
-        req["NAS-IP-Address"] = "192.168.0.100"
-        req["NAS-Port"] = 0
+    if "error" in result:
+        return HttpResponse(f"Authentication failed: {result.get('error_description')}", status=400)
 
-        reply = client.SendPacket(req)
-        return reply.code == pyrad.packet.AccessAccept
+    # Get user info from Microsoft
+    access_token = result.get("access_token")
+    user_info = requests.get(
+        "https://graph.microsoft.com/v1.0/me",
+        headers={"Authorization": f"Bearer {access_token}"}
+    ).json()
 
-    except Exception as e:
-        print(f"RADIUS error: {e}")
-        return False
+    # Store in session
+    request.session['user'] = {
+        'name': user_info.get('displayName'),
+        'email': user_info.get('mail') or user_info.get('userPrincipalName'),
+    }
 
+    return redirect('/success')
 
-def unlock_client(client_ip):
-    if not client_ip:
-        return
-    try:
-        subprocess.run([
-            'sudo', 'iptables', '-I', 'FORWARD',
-            '-s', client_ip,
-            '-j', 'ACCEPT'
-        ], check=True)
-    except Exception as e:
-        print(f"iptables error: {e}")
+def success(request):
+    user = request.session.get('user')
+    if not user:
+        return redirect('/')
+    return render(request, 'portal/success.html', {'user': user})
+
+def logout(request):
+    request.session.clear()
+    return redirect('/')
