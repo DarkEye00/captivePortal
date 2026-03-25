@@ -1,8 +1,9 @@
 import msal
-import requests
+import requests as http_requests
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import HttpResponse
+
 
 def get_msal_app():
     return msal.ConfidentialClientApplication(
@@ -11,22 +12,20 @@ def get_msal_app():
         client_credential=settings.CLIENT_SECRET,
     )
 
-def login(request):
-    # Save original URL client wanted to visit
-    next_url = request.GET.get('next', '/')
-    request.session['next_url'] = next_url
 
+def login(request):
     msal_app = get_msal_app()
     auth_url = msal_app.get_authorization_request_url(
         scopes=["User.Read"],
         redirect_uri=settings.REDIRECT_URI,
     )
-    return redirect(auth_url)
+    return render(request, 'portal/login.html', {'auth_url': auth_url})
+
 
 def callback(request):
     code = request.GET.get('code')
     if not code:
-        return HttpResponse("Authentication failed - no code received", status=400)
+        return HttpResponse("Authentication failed — no code received.", status=400)
 
     msal_app = get_msal_app()
     result = msal_app.acquire_token_by_authorization_code(
@@ -36,22 +35,24 @@ def callback(request):
     )
 
     if "error" in result:
-        return HttpResponse(f"Authentication failed: {result.get('error_description')}", status=400)
+        return HttpResponse(
+            f"Authentication failed: {result.get('error_description')}",
+            status=400
+        )
 
-    # Get user info from Microsoft
     access_token = result.get("access_token")
-    user_info = requests.get(
+    user_info = http_requests.get(
         "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {access_token}"}
     ).json()
 
-    # Store in session
     request.session['user'] = {
-        'name': user_info.get('displayName'),
-        'email': user_info.get('mail') or user_info.get('userPrincipalName'),
+        'name': user_info.get('displayName', 'User'),
+        'email': user_info.get('mail') or user_info.get('userPrincipalName', ''),
     }
 
     return redirect('/success')
+
 
 def success(request):
     user = request.session.get('user')
@@ -59,6 +60,7 @@ def success(request):
         return redirect('/')
     return render(request, 'portal/success.html', {'user': user})
 
+
 def logout(request):
-    request.session.clear()
+    request.session.flush()
     return redirect('/')

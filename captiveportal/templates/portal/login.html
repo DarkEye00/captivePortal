@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offshore Africa — WiFi Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #035e03;
+            min-height: 100vh;
+            display: flex;
+        }
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px),
+                repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px);
+        }
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px;
+            position: relative;
+            z-index: 1;
+        }
+        .logo-area { margin-bottom: 48px; }
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: #cc0000;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        .logo-icon svg { width: 28px; height: 28px; fill: white; }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+        .brand-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        .hero-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        .hero-text span { color: #cc0000; }
+        .accent-line { width: 48px; height: 3px; background: #cc0000; margin: 24px 0; }
+        .hero-desc {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.7;
+            max-width: 340px;
+        }
+        .right-panel {
+            width: 420px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px;
+            position: relative;
+            z-index: 1;
+        }
+        .green-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #2d7a2d;
+        }
+        .welcome-tag {
+            font-size: 11px;
+            color: #cc0000;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            color: #0a1f0a;
+            margin-bottom: 8px;
+        }
+        .card-sub {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 36px;
+            line-height: 1.6;
+        }
+        .ms-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: #0a1f0a;
+            border: none;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .ms-btn:hover { background: #1a3a1a; }
+        .ms-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .ms-btn span {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0;
+        }
+        .divider-line { flex: 1; height: 1px; background: #eee; }
+        .divider span { font-size: 12px; color: #bbb; }
+        .footer-note {
+            font-size: 12px;
+            color: #aaa;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .footer-note strong { color: #0a1f0a; }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .left-panel { padding: 32px 24px; min-height: 220px; }
+            .right-panel { width: 100%; padding: 32px 24px; }
+            .hero-text { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="left-panel">
+        <div class="logo-area">
+            <div class="logo-icon">
+                <img src="{% static 'images/logo5.png' %}" alt="OGL Logo">
+            </div>
+            <div class="brand-name">Offshore Global Logistics</div>
+            <div class="brand-sub">WiFi Access Portal</div>
+        </div>
+        <div class="hero-text">Secure <span>access</span><br>starts here.</div>
+        <div class="accent-line"></div>
+        <div class="hero-desc">Sign in with your Offshore Global Logistics Microsoft account to connect to our secure network. Your session is protected and monitored.</div>
+    </div>
+    <div class="right-panel">
+        <div class="green-bar"></div>
+        <div class="welcome-tag">Staff WiFi Access</div>
+        <div class="card-title">Welcome back</div>
+        <div class="card-sub">Use your Offshore Global Logistics organizational account to authenticate and gain network access.</div>
+        <a href="{{ auth_url }}" class="ms-btn">
+            <svg viewBox="0 0 21 21" fill="none">
+                <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+                <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+                <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+                <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
+            </svg>
+            <span>Sign in with Microsoft</span>
+        </a>
+        <div class="divider">
+            <div class="divider-line"></div>
+            <span>secure connection</span>
+            <div class="divider-line"></div>
+        </div>
+        <div class="footer-note">Only <strong>@offshoreafrica.org</strong> accounts are permitted.<br>Contact IT support if you need assistance.</div>
+    </div>
+</body>
+</html>
